@@ -23,6 +23,45 @@ Logger.log(result.choices[0].message.content.replace(/^\n\n/, ''));
 ```
 ![2023-03-05_15-07](https://user-images.githubusercontent.com/11365082/222959596-39c2b593-5de4-41e1-ab36-956bb31cb02f.png)
 
+To save the context, you can use caching in the script:
+
+```javascript
+function cache_context(question) {
+    var cache = CacheService.getScriptCache();
+    var cache_str = cache.get('cache');
+    var messages = [];
+    if (cache_str == null) {
+        messages = [{
+            "role": "user",
+            "content": question
+        }];
+    } else {
+        messages = JSON.parse(cache_str);
+        messages[messages.length] = {
+            "role": "user",
+            "content": question
+        };
+    }
+    
+    var answer = openai.Chat().CreateChatCompletion({
+        model: 'gpt-3.5-turbo',
+        messages: messages
+    }).choices[0].message.content.replace(/^\n\n/, '');
+    
+    messages[messages.length] = {
+        "role": "assistant",
+        "content": answer
+    };
+    
+    while (JSON.stringify(messages).length > 100000) {
+        var todelete = messages.shift();
+    }
+    
+    cache.put('cache', JSON.stringify(messages), 300);
+    return response;
+}
+```
+
 ### Create image
 
 ```javascript
