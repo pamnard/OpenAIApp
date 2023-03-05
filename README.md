@@ -58,7 +58,7 @@ function cache_context(question) {
     }
     
     cache.put('cache', JSON.stringify(messages), 300);
-    return response;
+    return answer;
 }
 ```
 
